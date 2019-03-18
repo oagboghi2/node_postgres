@@ -35,6 +35,10 @@ app.get(`/fortunes/:id`, (req, res)=>{
 
 })
 
+const writeFortunes = json => {
+    fs.writeFile('./data/fortunes.json', JSON.stringify(json), err => console.log(err));
+
+}
 app.post('/fortunes', (req, res)=>{
     console.log(req.body);
 
@@ -47,9 +51,8 @@ app.post('/fortunes', (req, res)=>{
         spirit_animal
     });
 
-    fs.writeFile('./data/fortunes.json', JSON.stringify(new_fortunes), err => console.log(err));
-
-    //res.json(new_fortunes)
+writeFortunes(new_fortunes)
+    res.json(new_fortunes)
 })
 
 app.put('/fortunes/:id', (req,res) => {
@@ -59,13 +62,26 @@ app.put('/fortunes/:id', (req,res) => {
 
     const old_fortune = fortunes.find(f => f.id == id);
 
-    old_fortune.message = message;
-    old_fortune.lucky_number = lucky_number;
-    old_fortune.spirit_animal = spirit_animal;
+    // if (message) old_fortune.message = message;
+    // if (lucky_number) old_fortune.lucky_number = lucky_number;
+    // if (spirit_animal )old_fortune.spirit_animal = spirit_animal;
 
-    fs.writeFile('./data/fortunes.json', JSON.stringify(fortunes), err => console.log(err));
-    console.log("testing")
+    ['message', 'lucky_number', 'spirit_animal'].forEach(key => {
+        if(req.body[key]) old_fortune[key] = req.body[key];
+    });
+
+    writeFortunes(fortunes) 
     res.json(fortunes)
+})
+
+app.delete('/fortunes/:id', (req, res) => {
+    const { id} = req.params;
+
+    const new_fortunes = fortunes.filter(f => f.id != id);
+
+    writeFortunes(new_fortunes);
+
+    res.json(new_fortunes);
 })
 // app.listen(port, ()=>{
 //     console.log(`Listening on port ${port}`)
